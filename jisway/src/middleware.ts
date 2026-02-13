@@ -7,9 +7,16 @@ const GOOGLE_VERIFICATION_PATH = "/googlef1f5d793c5e7ab45.html";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Google Search Console: HTML ファイル確認用
+  // Google Search Console: HTML ファイル確認用（ミドルウェアで直接返す）
   if (pathname === GOOGLE_VERIFICATION_PATH) {
-    return NextResponse.rewrite(new URL("/api/google-site-verification", req.url));
+    const body = "google-site-verification: googlef1f5d793c5e7ab45.html";
+    return new NextResponse(body, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
   }
 
   // Canonical host redirect (production)
