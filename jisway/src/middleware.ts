@@ -2,8 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+const GOOGLE_VERIFICATION_PATH = "/googlef1f5d793c5e7ab45.html";
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Google Search Console: HTML ファイル確認用
+  if (pathname === GOOGLE_VERIFICATION_PATH) {
+    return NextResponse.rewrite(new URL("/api/google-site-verification", req.url));
+  }
 
   // Canonical host redirect (production)
   const canonicalHost = process.env.CANONICAL_HOST?.trim();
@@ -38,6 +45,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/googlef1f5d793c5e7ab45.html",
+  ],
 };
 
