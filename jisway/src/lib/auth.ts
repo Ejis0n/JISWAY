@@ -18,9 +18,16 @@ export const authOptions: NextAuthOptions = {
         if (!email || !password) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
+        // Temporary debug for prod 401: check Vercel Functions logs after deploy
+        if (process.env.NODE_ENV === "production") {
+          console.log("[auth] email=", email, "userFound=", !!user);
+        }
         if (!user) return null;
 
         const ok = await bcrypt.compare(password, user.passwordHash);
+        if (process.env.NODE_ENV === "production") {
+          console.log("[auth] passwordMatch=", ok);
+        }
         if (!ok) return null;
 
         return { id: user.id, email: user.email };
