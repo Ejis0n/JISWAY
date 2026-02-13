@@ -1,0 +1,41 @@
+{
+  "standard": "JIS",
+  "sizes_mm": [3,4,5,6,8,10,12,14,16,18,20,22,24],
+  "images": {
+    "bolt": "https://placehold.co/800x600?text=JIS+Hex+Bolt",
+    "nut": "https://placehold.co/800x600?text=JIS+Hex+Nut",
+    "washer": "https://placehold.co/800x600?text=JIS+Washer"
+  },
+  "bolts": {
+    "lengths_default_mm": [10,12,16,20,25,30,40,50,60,70],
+    "lengths_by_size_mm": {
+      "M3": [6,8,10,12,16,20],
+      "M4": [8,10,12,16,20,25],
+      "M5": [10,12,16,20,25,30],
+      "M6": [10,12,16,20,25,30,40],
+      "M8": [12,16,20,25,30,40,50],
+      "M10": [16,20,25,30,40,50,60],
+      "M12": [20,25,30,40,50,60,70],
+      "M14": [25,30,40,50,60,70],
+      "M16": [30,40,50,60,70],
+      "M18": [40,50,60,70],
+      "M20": [40,50,60,70],
+      "M22": [50,60,70],
+      "M24": [50,60,70]
+    },
+    "strength_classes": ["8.8", "10.9"],
+    "finishes": ["zinc", "plain", "stainless"],
+    "pack_qty": [10, 20, 50, 100]
+  },
+  "nuts": {
+    "types": ["hex"],
+    "finishes": ["zinc", "stainless"],
+    "pack_qty": [10, 20, 50, 100]
+  },
+  "washers": {
+    "types": ["flat"],
+    "finishes": ["zinc", "stainless"],
+    "pack_qty": [20, 50, 100]
+  }
+}
+

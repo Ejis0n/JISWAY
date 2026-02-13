@@ -1,0 +1,10 @@
+zone_name,band,carrier,price_usd,eta_min_days,eta_max_days,tracking_included,notes
+ASEAN,BAND_A_10PCS,JP_POST,18.00,8,14,true,
+ASEAN,BAND_B_20PCS,JP_POST,28.00,8,14,true,
+North America,BAND_A_10PCS,JP_POST,22.00,7,12,true,
+North America,BAND_B_20PCS,JP_POST,34.00,7,12,true,
+EU/UK,BAND_A_10PCS,JP_POST,24.00,8,14,true,"EU/UK: VAT may be collected by customs or the carrier on delivery."
+EU/UK,BAND_B_20PCS,JP_POST,36.00,8,14,true,"EU/UK: VAT may be collected by customs or the carrier on delivery."
+Oceania,BAND_A_10PCS,JP_POST,25.00,7,12,true,
+Oceania,BAND_B_20PCS,JP_POST,38.00,7,12,true,
+

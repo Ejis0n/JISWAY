@@ -1,0 +1,739 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductCategory {
+  bolt
+  nut
+  washer
+}
+
+enum PackType {
+  PACK_10
+  PACK_20
+  PACK_50
+  PACK_100
+}
+
+enum ShippingBand {
+  BAND_A // 10pcs
+  BAND_B // 20pcs
+}
+
+enum ShippingRuleBand {
+  BAND_A_10PCS
+  BAND_B_20PCS
+  BAND_C_BULK
+}
+
+enum ShippingCarrier {
+  JP_POST
+  DHL
+}
+
+enum CarrierPolicyType {
+  CHEAPEST
+  FASTEST
+  DEFAULT
+}
+
+enum SupportTicketCategory {
+  misorder
+  damage
+  lost
+  customs
+  billing
+  other
+}
+
+enum SupportTicketStatus {
+  new
+  in_progress
+  waiting_customer
+  resolved
+  rejected
+}
+
+enum OrderStatus {
+  created
+  paid
+  failed
+  canceled
+}
+
+enum DisputeStatus {
+  none
+  in_dispute
+  won
+  lost
+}
+
+enum OrderEvidenceType {
+  acknowledgement
+  invoice
+  receipt
+  shipping_label
+  tracking
+  delivery_confirmation
+  packaging_photo
+  item_photo
+  communication
+}
+
+enum RequestStatus {
+  NEW
+  IN_PROGRESS
+  APPROVED
+  COMPLETED
+  REJECTED
+}
+
+enum InvoicePaymentMethod {
+  wire
+  usdt
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  expired
+}
+
+enum AnalyticsEventName {
+  PageView
+  AddToCart
+  StartCheckout
+  SubmitQuote
+  SubmitProcure
+}
+
+enum ProcurementStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+enum FxPair {
+  JPYUSD
+}
+
+enum FxSource {
+  manual
+  provider
+}
+
+enum CostSource {
+  supplier_offer
+  manual
+}
+
+enum PricingRuleScope {
+  global
+  category
+  size
+  variant
+}
+
+enum RoundingStrategy {
+  USD_0_00
+  USD_0_99
+  USD_0_49
+}
+
+model AppEvent {
+  id        String   @id @default(cuid())
+  type      String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+}
+
+model StripeEvent {
+  id         String   @id // Stripe event id
+  type       String
+  receivedAt DateTime @default(now())
+  meta       Json?
+}
+
+model AnalyticsEvent {
+  id        String             @id @default(cuid())
+  name      AnalyticsEventName
+  path      String
+  country   String?
+  variantId String?
+  createdAt DateTime           @default(now())
+
+  @@index([name, createdAt])
+  @@index([path, createdAt])
+}
+
+model ProcurementRequest {
+  id        String            @id @default(cuid())
+  status    ProcurementStatus @default(NEW)
+  name      String
+  company   String
+  email     String
+  country   String
+  specText  String
+  quantity  Int?
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+}
+
+model FxRate {
+  id         String   @id @default(cuid())
+  pair       FxPair
+  // rate is JPY per 1 USD (e.g., 150.25)
+  rate       Float
+  source     FxSource @default(manual)
+  capturedAt DateTime @default(now())
+
+  @@index([pair, capturedAt])
+}
+
+model CostBasis {
+  id            String              @id @default(cuid())
+  variantId     String
+  variant       Variant             @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  supplierId    String?
+  supplier      Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  costJpyPerPack Int
+  leadTimeDays  Int?
+  availability  SupplierAvailability?
+  capturedAt    DateTime            @default(now())
+  source        CostSource
+
+  @@index([variantId, capturedAt])
+  @@index([supplierId, capturedAt])
+}
+
+model PricingRule {
+  id                 String            @id @default(cuid())
+  scope              PricingRuleScope
+  category           ProductCategory?
+  size               String?
+  variantId          String?
+  variant            Variant?          @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  targetGrossMargin  Float
+  minPriceUsdCents   Int
+  maxPriceUsdCents   Int
+  rounding           RoundingStrategy  @default(USD_0_99)
+  maxWeeklyChangePct Float             @default(0.15)
+  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime          @default(now())
+
+  @@index([scope, updatedAt])
+  @@index([category, size])
+  @@index([variantId])
+}
+
+model PriceChangeLog {
+  id              String   @id @default(cuid())
+  variantId       String
+  variant         Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  oldPriceUsd     Int
+  newPriceUsd     Int
+  reasonJson      Json
+  appliedByAdminId String?
+  appliedByAdmin  User?    @relation(fields: [appliedByAdminId], references: [id], onDelete: SetNull)
+  appliedAt       DateTime @default(now())
+
+  @@index([variantId, appliedAt])
+  @@index([appliedByAdminId, appliedAt])
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+  priceChangeLogs PriceChangeLog[]
+}
+
+model Product {
+  id            String          @id @default(cuid())
+  specKey        String          @unique
+  category       ProductCategory
+  standard       String          @default("JIS")
+  size           String
+  length         Int?
+  strengthClass  String?
+  finish         String          @default("zinc plated")
+  imageUrl       String?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  variants       Variant[]
+
+  @@index([category, size])
+}
+
+model Variant {
+  id           String       @id @default(cuid())
+  productId    String
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  packType     PackType
+  shippingBand ShippingBand
+  slug         String       @unique
+  priceUsd     Int          // cents
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  orderItems   OrderItem[]
+  procurementLines ProcurementTaskLine[]
+  offers       SupplierOffer[]
+  routingDecisions RoutingDecision[]
+  costBases    CostBasis[]
+  priceChangeLogs PriceChangeLog[]
+  pricingRules PricingRule[]
+
+  @@index([packType])
+  @@index([shippingBand])
+}
+
+model ShippingRate {
+  id        String       @id @default(cuid())
+  band      ShippingBand @unique
+  amountUsd Int          // cents
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model ShippingZone {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  isActive Boolean @default(true)
+  countries ShippingZoneCountry[]
+  rules     ShippingRule[]
+  policy    CarrierPolicy?
+  orderShippings OrderShipping[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingZoneCountry {
+  id      String       @id @default(cuid())
+  zoneId  String
+  zone    ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  code    String       // ISO 3166-1 alpha-2
+
+  @@index([code])
+  @@unique([zoneId, code])
+}
+
+model ShippingRule {
+  id               String          @id @default(cuid())
+  zoneId           String
+  zone             ShippingZone    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  band             ShippingRuleBand
+  carrier          ShippingCarrier
+  priceUsdCents    Int
+  etaMinDays       Int
+  etaMaxDays       Int
+  trackingIncluded Boolean @default(true)
+  notes            String?
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@index([zoneId, band, carrier])
+  @@index([updatedAt])
+  @@unique([zoneId, band, carrier])
+}
+
+model CarrierPolicy {
+  id                     String           @id @default(cuid())
+  zoneId                 String           @unique
+  zone                   ShippingZone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  policy                 CarrierPolicyType @default(DEFAULT)
+  defaultCarrier         ShippingCarrier   @default(JP_POST)
+  forceDhlOverWeightKg   Float?
+  forceDhlOverSubtotalUsdCents Int?
+  notes                  String?
+  updatedAt              DateTime @updatedAt
+  createdAt              DateTime @default(now())
+}
+
+model Order {
+  id                     String       @id @default(cuid())
+  status                 OrderStatus  @default(created)
+  fulfillmentStatus      FulfillmentStatus @default(pending_procurement)
+  disputeStatus          DisputeStatus @default(none)
+  email                  String?
+  country                String?
+  subtotalUsd            Int          // cents
+  shippingUsd            Int          // cents
+  totalUsd               Int          // cents
+  currency               String       @default("usd")
+  stripeCheckoutSessionId String      @unique
+  stripePaymentIntentId  String?
+  stripeCustomerId       String?
+  paidAt                 DateTime?
+  carrier                String?
+  trackingNumber         String?
+  shippedAt              DateTime?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  items                  OrderItem[]
+  procurementTasks       ProcurementTask[]
+  shipments              Shipment[]
+  routingDecisions       RoutingDecision[]
+  orderShipping          OrderShipping?
+  acknowledgements       OrderAcknowledgement[]
+  evidence               OrderEvidence[]
+}
+
+model OrderAcknowledgement {
+  id             String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  checkoutSessionId String?
+  ackExactSpec    Boolean
+  ackNoInventory  Boolean
+  ackDutiesTaxes  Boolean
+  ackRefundPolicy Boolean
+  ipAddress       String?
+  userAgent       String?
+  acknowledgedAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([orderId, acknowledgedAt])
+  @@index([checkoutSessionId])
+}
+
+model OrderEvidence {
+  id          String           @id @default(cuid())
+  orderId     String
+  order       Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type        OrderEvidenceType
+  fileUrl     String?
+  textContent String?
+  createdAt   DateTime         @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([type, createdAt])
+}
+
+model OrderShipping {
+  id               String          @id @default(cuid())
+  orderId           String          @unique
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  zoneId            String
+  zone              ShippingZone    @relation(fields: [zoneId], references: [id], onDelete: Restrict)
+  carrier           ShippingCarrier
+  band              ShippingRuleBand
+  shippingPriceUsd  Int
+  etaMinDays        Int
+  etaMaxDays        Int
+  trackingNumber    String?
+  shippedAt         DateTime?
+  packagingPhotoUrls String[]       @default([])
+  shipmentPhotoUrls  String[]       @default([])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([zoneId])
+  @@index([carrier])
+}
+
+enum FulfillmentStatus {
+  pending_procurement
+  in_procurement
+  ready_to_ship
+  shipped
+  completed
+  canceled
+}
+
+enum ProcurementTaskStatus {
+  needs_assignment
+  new
+  requested
+  confirmed
+  received
+  shipped
+  closed
+  canceled
+}
+
+model Supplier {
+  id            String   @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  leadTimeDays  Int?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  procurementTasks ProcurementTask[]
+  assignments       SupplierAssignment[]
+  offers            SupplierOffer[]
+  routingDecisions  RoutingDecision[] @relation("RoutingDecisionChosenSupplier")
+  costBases         CostBasis[]
+
+  @@index([name])
+}
+
+enum SupplierAvailability {
+  in_stock
+  limited
+  backorder
+  unknown
+}
+
+model SupplierOffer {
+  id            String              @id @default(cuid())
+  supplierId    String
+  supplier      Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  variantId     String?
+  variant       Variant?            @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  category      ProductCategory?
+  size          String?
+  lengthMm      Int?
+  finish        String?
+  strengthClass String?
+  packQty       Int?
+  unitCostJpy   Int                 // cost per pack
+  minOrderPacks Int                 @default(1)
+  leadTimeDays  Int?
+  availability  SupplierAvailability @default(unknown)
+  updatedAt     DateTime            @updatedAt
+  createdAt     DateTime            @default(now())
+
+  @@index([supplierId, updatedAt])
+  @@index([variantId])
+  @@index([category, size, packQty])
+}
+
+enum RoutingStrategy {
+  CHEAPEST
+  FASTEST
+  BALANCED
+  AVAILABILITY_FIRST
+}
+
+model RoutingConfig {
+  id        String         @id @default("default")
+  enabled   Boolean        @default(false)
+  strategy  RoutingStrategy @default(BALANCED)
+  weights   Json?          // {cost, lead, availability, match}
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model RoutingDecision {
+  id               String          @id @default(cuid())
+  orderId           String
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId         String
+  variant           Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  chosenSupplierId  String?
+  chosenSupplier    Supplier?       @relation("RoutingDecisionChosenSupplier", fields: [chosenSupplierId], references: [id], onDelete: SetNull)
+  strategy          RoutingStrategy
+  scoreJson         Json
+  reasonText        String
+  decidedAt         DateTime        @default(now())
+
+  @@index([orderId, decidedAt])
+  @@index([variantId, decidedAt])
+  @@index([chosenSupplierId, decidedAt])
+}
+
+model SupplierAssignment {
+  id         String          @id @default(cuid())
+  supplierId String
+  supplier   Supplier        @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  category   ProductCategory
+  size       String          @default("") // "" = category-wide; otherwise size-specific (e.g. "M12")
+  priority   Int             @default(0) // higher wins
+  createdAt  DateTime        @default(now())
+
+  @@index([category, size, priority])
+  @@unique([supplierId, category, size])
+}
+
+model ProcurementTask {
+  id                String               @id @default(cuid())
+  orderId           String
+  order             Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status            ProcurementTaskStatus @default(new)
+  supplierId        String?
+  supplier          Supplier?            @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  requestedAt       DateTime?
+  confirmedAt       DateTime?
+  receivedAt        DateTime?
+  shippedAt         DateTime?
+  closedAt          DateTime?
+  procurementNotes  String?
+  packagingPhotoUrls String[]            @default([])
+  shipmentPhotoUrls  String[]            @default([])
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  lines             ProcurementTaskLine[]
+
+  @@index([status, createdAt])
+  @@index([supplierId, createdAt])
+  @@index([orderId, createdAt])
+}
+
+model SupportTicket {
+  id          String              @id @default(cuid())
+  name        String?
+  company     String?
+  email       String
+  country     String?
+  orderId     String?
+  category    SupportTicketCategory @default(other)
+  message     String
+  status      SupportTicketStatus @default(new)
+  internalNotes String?
+  attachments SupportAttachment[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([email, createdAt])
+  @@index([status, updatedAt])
+  @@index([category, updatedAt])
+  @@index([orderId, createdAt])
+}
+
+model SupportAttachment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fileUrl   String
+  kind      String   @default("photo") // photo|doc
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model ProcurementTaskLine {
+  id              String          @id @default(cuid())
+  taskId          String
+  task            ProcurementTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  variantId       String
+  variant         Variant         @relation(fields: [variantId], references: [id])
+  qtyPacks        Int
+  packQty         Int
+  unitCostJpy     Int?
+  expectedCostJpy Int?
+  createdAt       DateTime        @default(now())
+
+  @@index([taskId])
+  @@index([variantId])
+}
+
+model Shipment {
+  id             String   @id @default(cuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrier        String?
+  trackingNumber String?
+  shippedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([orderId, createdAt])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId     String
+  variant       Variant  @relation(fields: [variantId], references: [id])
+  quantity      Int
+  unitPriceUsd  Int      // cents
+  lineTotalUsd  Int      // cents
+  specSnapshot  Json
+  createdAt     DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model QuoteRequest {
+  id                   String        @id @default(cuid())
+  status               RequestStatus @default(NEW)
+  email                String
+  name                 String?
+  company              String?
+  country              String?
+  message              String?
+  cartSnapshot         Json?
+  subtotalUsd          Int?          // cents
+  adminNotes           String?
+  stripeInvoiceId      String?
+  stripeInvoiceUrl     String?
+  invoiceId            String?
+  invoice              Invoice?      @relation(fields: [invoiceId], references: [id])
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model AltPaymentRequest {
+  id              String        @id @default(cuid())
+  status          RequestStatus @default(NEW)
+  email           String
+  name            String?
+  company         String?
+  country         String?
+  message         String?
+  cartSnapshot    Json?
+  amountUsd       Int?          // cents
+  requestedMethods Json?
+  adminNotes      String?
+  invoiceId       String?
+  invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Invoice {
+  id                 String               @id @default(cuid())
+  token              String               @unique
+  amountUsd           Int                  // cents
+  paymentMethod       InvoicePaymentMethod
+  paymentInstructions String
+  dueDate             DateTime
+  status              InvoiceStatus        @default(pending)
+  paidAt              DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  altRequests         AltPaymentRequest[]
+  quoteRequests       QuoteRequest[]
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  adminUser   User     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String
+  entityType  String
+  entityId    String?
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  @@index([adminUserId, createdAt])
+}
