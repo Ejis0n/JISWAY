@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/googlef1f5d793c5e7ab45.html",
+        destination: "/api/google-site-verification",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
