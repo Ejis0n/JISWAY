@@ -24,9 +24,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(getAppBaseUrl()),
   description:
     "Global procurement portal for JIS fasteners (bolts, nuts, washers). Ships worldwide. No inventory — procured after payment confirmation.",
-  verification: {
-    google: "FKmvd2HnASSbBIlGg5RhL8OG_yG1dNfxov97kaqa52g",
-  },
 };
 
 export default function RootLayout({
@@ -36,6 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta
+          name="google-site-verification"
+          content="FKmvd2HnASSbBIlGg5RhL8OG_yG1dNfxov97kaqa52g"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
