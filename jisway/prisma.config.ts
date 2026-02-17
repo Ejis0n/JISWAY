@@ -8,7 +8,6 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  datasource: {
-    url: process.env["DATABASE_URL"]!,
-  },
+  // Let schema.prisma read DATABASE_URL from env (shell or .env) so that
+  // "DATABASE_URL=... npx prisma migrate deploy" works.
 });

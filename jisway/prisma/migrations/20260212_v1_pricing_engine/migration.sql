@@ -18,6 +18,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'RoundingStrategy') THEN
     CREATE TYPE "RoundingStrategy" AS ENUM ('USD_0_00','USD_0_99','USD_0_49');
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'SupplierAvailability') THEN
+    CREATE TYPE "SupplierAvailability" AS ENUM ('in_stock','limited','backorder','unknown');
+  END IF;
 END $$;
 
 -- 2) FxRate

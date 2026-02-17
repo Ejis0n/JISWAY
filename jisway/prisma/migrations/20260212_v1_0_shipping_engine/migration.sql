@@ -108,4 +108,3 @@ ALTER TABLE "OrderShipping"
 ALTER TABLE "OrderShipping"
   ADD CONSTRAINT "OrderShipping_zoneId_fkey"
   FOREIGN KEY ("zoneId") REFERENCES "ShippingZone"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-

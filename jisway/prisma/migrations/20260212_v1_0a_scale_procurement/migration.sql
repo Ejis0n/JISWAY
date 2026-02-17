@@ -139,4 +139,3 @@ CREATE INDEX IF NOT EXISTS "Shipment_orderId_createdAt_idx" ON "Shipment" ("orde
 ALTER TABLE "Shipment"
   ADD CONSTRAINT "Shipment_orderId_fkey"
   FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
