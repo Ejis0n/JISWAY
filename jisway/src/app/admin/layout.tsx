@@ -23,6 +23,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Link className="hover:text-zinc-950 dark:hover:text-white" href="/admin/offers">
               Offers
             </Link>
+            <Link className="hover:text-zinc-950 dark:hover:text-white" href="/admin/customer-offers">
+              Customer offers
+            </Link>
             <Link className="hover:text-zinc-950 dark:hover:text-white" href="/admin/routing">
               Routing
             </Link>
