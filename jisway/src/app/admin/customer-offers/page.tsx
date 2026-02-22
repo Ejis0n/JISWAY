@@ -109,7 +109,7 @@ export default async function AdminCustomerOffersPage({
                         href={`/jis/${o.variant.product.category}/${o.variant.slug}`}
                         className="font-mono text-xs underline underline-offset-2"
                       >
-                        {o.variant.product.size} {o.variant.product.lengthMm ?? ""} {o.variant.packType}
+                        {o.variant.product.size} {o.variant.product.length ?? ""} {o.variant.packType}
                       </Link>
                     ) : (
                       "—"
