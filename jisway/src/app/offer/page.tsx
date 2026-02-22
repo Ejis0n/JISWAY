@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "希望価格・数量・商品についてオファーを送信できます。",
 };
 
-export default function OfferPage({
+export default async function OfferPage({
   searchParams,
 }: {
   searchParams: Promise<{ variantId?: string }>;
