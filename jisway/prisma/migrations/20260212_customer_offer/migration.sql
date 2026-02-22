@@ -1,3 +1,10 @@
+-- Ensure enum exists (may already exist if QuoteRequest was migrated elsewhere)
+DO $$ BEGIN
+  CREATE TYPE "RequestStatus" AS ENUM ('NEW','IN_PROGRESS','APPROVED','COMPLETED','REJECTED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
 -- CreateTable
 CREATE TABLE "CustomerOffer" (
     "id" TEXT NOT NULL,
