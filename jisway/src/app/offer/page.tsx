@@ -3,8 +3,8 @@ import { OfferFormClient } from "@/components/offer/OfferFormClient";
 import { getCatalog } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "オファーを送る",
-  description: "希望価格・数量・商品についてオファーを送信できます。",
+  title: "Make an offer",
+  description: "Submit an offer with your desired price, quantity, and product.",
 };
 
 export default async function OfferPage({

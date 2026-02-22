@@ -38,9 +38,9 @@ export default async function AdminCustomerOffersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Customer offers（客からのオファー）</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Customer offers</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          お客様が送信したオファー一覧。対応後はステータスを更新してください。
+          Offers submitted by customers. Update status after handling.
         </p>
       </div>
 
