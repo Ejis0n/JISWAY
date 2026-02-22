@@ -37,6 +37,16 @@ export async function POST(req: Request) {
 
   const { email, name, company, country, variantId, offeredPriceUsd, quantity, message } = parsed.data;
 
+  // Catalog sends slug-like ids; resolve to DB Variant.id (cuid) or leave null
+  let dbVariantId: string | null = null;
+  if (variantId?.trim()) {
+    const v = await prisma.variant.findFirst({
+      where: { OR: [{ id: variantId.trim() }, { slug: variantId.trim() }] },
+      select: { id: true },
+    });
+    dbVariantId = v?.id ?? null;
+  }
+
   const created = await prisma.customerOffer.create({
     data: {
       status: "NEW",
@@ -44,7 +54,7 @@ export async function POST(req: Request) {
       name: name?.trim() || null,
       company: company?.trim() || null,
       country: country?.trim() || null,
-      variantId: variantId?.trim() || null,
+      variantId: dbVariantId,
       offeredPriceUsdCents: offeredPriceUsd != null ? usdToCents(offeredPriceUsd) : null,
       quantity: quantity ?? null,
       message: message?.trim() || null,
