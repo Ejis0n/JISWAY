@@ -1,21 +1,33 @@
 import type { CatalogVariant } from "@/lib/catalog";
+import { getAppBaseUrl } from "@/lib/baseUrl";
+import { getProductImageUrl } from "@/lib/productImage";
 import { buildSeoSlug } from "@/lib/seo/slug";
 import { metaDescription, seoTitle } from "@/lib/seo/templates";
 
+function absoluteUrl(path: string) {
+  const base = getAppBaseUrl();
+  return path.startsWith("http") ? path : `${base.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 export function productJsonLd(v: CatalogVariant) {
-  const url = `/jis/${v.category}/${buildSeoSlug(v)}`;
+  const path = `/jis/${v.category}/${buildSeoSlug(v)}`;
+  const url = absoluteUrl(path);
+  const imageUrl = absoluteUrl(getProductImageUrl(v));
+  const priceValidUntil = new Date();
+  priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1);
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: seoTitle(v),
     sku: v.id,
-    image: v.image_url ? [v.image_url] : undefined,
+    image: [imageUrl],
     description: `${metaDescription(v)} Procured after payment confirmation.`,
     brand: { "@type": "Brand", name: "JISWAY" },
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
       price: v.price_usd.toFixed(2),
+      priceValidUntil: priceValidUntil.toISOString().slice(0, 10),
       url,
       availability: "https://schema.org/PreOrder",
     },

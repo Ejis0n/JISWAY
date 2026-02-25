@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { StickyCta } from "@/components/StickyCta";
 import { getCatalog, getVariantBySeoSlug, type CatalogCategory } from "@/lib/catalog";
+import { getProductImageUrl } from "@/lib/productImage";
 import { buildSeoSlug } from "@/lib/seo/slug";
 import { internalLinks } from "@/lib/seo/links";
 import { buildSeoMetadata } from "@/lib/seo/metadata";
@@ -173,20 +174,14 @@ export default async function VariantPage({
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <div className="relative aspect-[4/3]">
-            {variant.image_url ? (
-              <Image
-                src={variant.image_url}
-                alt={seoTitle(variant)}
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 520px, 100vw"
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm text-zinc-500">
-                No image
-              </div>
-            )}
+            <Image
+              src={getProductImageUrl(variant)}
+              alt={seoTitle(variant)}
+              fill
+              className="object-cover"
+              sizes="(min-width: 1024px) 520px, 100vw"
+              priority
+            />
           </div>
         </div>
 
