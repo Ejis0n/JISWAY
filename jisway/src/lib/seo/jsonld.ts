@@ -34,6 +34,22 @@ export function productJsonLd(v: CatalogVariant) {
   };
 }
 
+export function breadcrumbJsonLd(v: { category: string }, path: string, productName?: string) {
+  const base = getAppBaseUrl();
+  const home = base.replace(/\/+$/, "");
+  const categoryLabel = v.category === "bolt" ? "Bolts" : v.category === "nut" ? "Nuts" : "Washers";
+  const itemUrl = path.startsWith("http") ? path : `${home}${path.startsWith("/") ? path : `/${path}`}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "JISWAY", item: home },
+      { "@type": "ListItem", position: 2, name: categoryLabel, item: `${home}/jis/${v.category}` },
+      { "@type": "ListItem", position: 3, name: productName ?? "Product", item: itemUrl },
+    ],
+  };
+}
+
 export function faqJsonLd() {
   return {
     "@context": "https://schema.org",

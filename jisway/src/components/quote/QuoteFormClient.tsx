@@ -67,6 +67,9 @@ export function QuoteFormClient({ catalog }: { catalog: CatalogVariant[] }) {
         const j = (await res.json().catch(() => null)) as { error?: string } | null;
         throw new Error(j?.error || `Request failed (${res.status})`);
       }
+      if (typeof window !== "undefined" && "gtag" in window) {
+        (window as unknown as { gtag: (a: string, b: string, c?: object) => void }).gtag("event", "quote_submitted");
+      }
       setOk(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");

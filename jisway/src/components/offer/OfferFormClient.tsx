@@ -58,6 +58,9 @@ export function OfferFormClient({
       });
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+      if (typeof window !== "undefined" && "gtag" in window) {
+        (window as unknown as { gtag: (a: string, b: string, c?: object) => void }).gtag("event", "offer_submitted");
+      }
       setOk(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");

@@ -1,15 +1,13 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { StickyCta } from "@/components/StickyCta";
 import { getCatalog, getVariantBySeoSlug, type CatalogCategory } from "@/lib/catalog";
-import { getProductImageUrl } from "@/lib/productImage";
 import { buildSeoSlug } from "@/lib/seo/slug";
 import { internalLinks } from "@/lib/seo/links";
 import { buildSeoMetadata } from "@/lib/seo/metadata";
-import { faqJsonLd, productJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, faqJsonLd, productJsonLd } from "@/lib/seo/jsonld";
 import { metaDescription, seoTitle } from "@/lib/seo/templates";
 
 const CATEGORIES = ["bolt", "nut", "washer"] as const;
@@ -167,47 +165,36 @@ export default async function VariantPage({
   const catalog = getCatalog();
   const links = internalLinks(variant, catalog);
   const jsonLd = productJsonLd(variant);
+  const breadcrumb = breadcrumbJsonLd(variant, `/jis/${category}/${buildSeoSlug(variant)}`, seoTitle(variant));
   const faq = faqJsonLd();
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="relative aspect-[4/3]">
-            <Image
-              src={getProductImageUrl(variant)}
-              alt={seoTitle(variant)}
-              fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 520px, 100vw"
-              priority
-            />
-          </div>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold tracking-tight">{seoTitle(variant)}</h1>
+        <div className="text-xl font-semibold">
+          ${variant.price_usd.toFixed(2)} USD · {variant.pack_qty}pcs
         </div>
-
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold tracking-tight">{seoTitle(variant)}</h1>
-          <div className="text-xl font-semibold">
-            ${variant.price_usd.toFixed(2)} USD · {variant.pack_qty}pcs
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <AddToCartButton variantId={variant.id} />
-            <Link
-              href={`/offer?variantId=${encodeURIComponent(variant.id)}`}
-              className="rounded-md border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
-            >
-              Make an offer
-            </Link>
-          </div>
-          <div className="rounded-lg border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="font-semibold">Notes</div>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-600 dark:text-zinc-300">
-              <li>No substitutes. Exact JIS specification.</li>
-              <li>Confirm size/length before ordering. No substitutes.</li>
-              <li>Procured through Japan-based industrial supply chain.</li>
-              <li>Import duties and taxes are the responsibility of the recipient.</li>
-            </ul>
-          </div>
+        <div className="flex flex-wrap gap-3">
+          <AddToCartButton variantId={variant.id} />
+          <Link
+            href={`/offer?variantId=${encodeURIComponent(variant.id)}`}
+            className="rounded-md border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
+          >
+            Make an offer
+          </Link>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="font-semibold">Notes</div>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-600 dark:text-zinc-300">
+            <li>No substitutes. Exact JIS specification.</li>
+            <li>Confirm size/length before ordering. No substitutes.</li>
+            <li>Procured through Japan-based industrial supply chain.</li>
+            <li>Import duties and taxes are the responsibility of the recipient.</li>
+          </ul>
+          <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+            Delivery: typically 2–3 weeks after payment (items procured from Japan, then shipped).
+          </p>
         </div>
       </div>
 
@@ -293,6 +280,11 @@ export default async function VariantPage({
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       <script
         type="application/ld+json"

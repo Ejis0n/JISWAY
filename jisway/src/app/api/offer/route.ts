@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 
 const BodySchema = z.object({
@@ -67,6 +68,26 @@ export async function POST(req: Request) {
       meta: { offerId: created.id, email },
     },
   });
+
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  if (adminEmail) {
+    await sendEmail({
+      to: adminEmail,
+      subject: `New customer offer (${created.id})`,
+      text: [
+        `CustomerOffer ID: ${created.id}`,
+        `Email: ${email}`,
+        name ? `Name: ${name}` : "",
+        company ? `Company: ${company}` : "",
+        country ? `Country: ${country}` : "",
+        offeredPriceUsd != null ? `Offered price: $${offeredPriceUsd.toFixed(2)}` : "",
+        quantity != null ? `Quantity: ${quantity}` : "",
+        message ? `Message: ${message}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+  }
 
   return NextResponse.json({ ok: true, id: created.id });
 }

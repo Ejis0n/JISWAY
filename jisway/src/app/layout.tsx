@@ -5,6 +5,7 @@ import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getAppBaseUrl } from "@/lib/baseUrl";
+import { CookieBanner } from "@/components/CookieBanner";
 import { EventBeacon } from "@/components/EventBeacon";
 
 const geistSans = Geist({
@@ -52,15 +53,11 @@ export default function RootLayout({
           name="google-site-verification"
           content="FKmvd2HnASSbBIlGg5RhL8OG_yG1dNfxov97kaqa52g"
         />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-78DN3QC4VK"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -68,11 +65,24 @@ export default function RootLayout({
             gtag('config', 'G-78DN3QC4VK');
           `}
         </Script>
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-zinc-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white focus:outline-none dark:focus:bg-white dark:focus:text-black"
+        >
+          Skip to main content
+        </a>
         <div className="min-h-dvh bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
           <SiteHeader />
-          <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
+          <main id="main" className="mx-auto w-full max-w-6xl px-4 py-8" tabIndex={-1}>
+            {children}
+          </main>
           <SiteFooter />
         </div>
+        <CookieBanner />
         <EventBeacon />
       </body>
     </html>

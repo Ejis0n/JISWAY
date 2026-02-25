@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { OrderSuccessBeacon } from "@/components/OrderSuccessBeacon";
 
 export const metadata: Metadata = {
   title: "Order confirmed",
@@ -24,6 +25,7 @@ export default async function OrderSuccessPage({
 
   return (
     <div className="space-y-6">
+      <OrderSuccessBeacon hasOrder={Boolean(order)} />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Order confirmed</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">

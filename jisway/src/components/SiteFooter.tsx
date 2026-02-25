@@ -23,11 +23,26 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link className="hover:text-zinc-950 dark:hover:text-white" href="/offer">
+                  Make an offer
+                </Link>
+              </li>
+              <li>
                 <Link
                   className="hover:text-zinc-950 dark:hover:text-white"
                   href="/alternative-payment"
                 >
                   Request alternative payment (wire / USDT)
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-zinc-950 dark:hover:text-white" href="/support">
+                  Support
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-zinc-950 dark:hover:text-white" href="/faq">
+                  FAQ
                 </Link>
               </li>
             </ul>

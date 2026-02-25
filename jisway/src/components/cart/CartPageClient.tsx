@@ -167,6 +167,9 @@ export function CartPageClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Cart</h1>
+        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+          Delivery: typically 2–3 weeks after payment (procured from Japan, then shipped).
+        </p>
       </div>
 
       {enriched.length === 0 ? (

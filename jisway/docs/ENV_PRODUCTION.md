@@ -29,6 +29,11 @@ This project reads environment variables from **Vercel Environment Variables** (
 - `EMAIL_FROM`
   - Verified sender, e.g. `JISWAY <no-reply@jisway.com>`
 
+- `ADMIN_EMAIL`
+  - Address that receives admin notifications: new quote requests, new customer offers, payment/webhook alerts.
+  - Example: `jisway-contact@officet2.jp`  
+  - If unset, those notifications are skipped (no error).
+
 ## Optional (Production)
 
 - `CANONICAL_HOST`

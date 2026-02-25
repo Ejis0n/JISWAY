@@ -101,12 +101,22 @@ export default async function JisCategoryPage({
     return q ? `/jis/${category}?${q}` : `/jis/${category}`;
   };
 
+  const categoryIntro =
+    category === "bolt"
+      ? "JIS hex bolts with defined dimensions and strength classes (e.g. 8.8, 10.9). Procured from Japan, shipped worldwide."
+      : category === "nut"
+        ? "JIS hex nuts matching standard thread sizes. Exact specification only; no substitutes."
+        : "JIS flat washers for standard bolt sizes. Zinc plated or plain; procured after order confirmation.";
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">JIS {title}</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          USD. Server-rendered filters. Page size: {PER_PAGE}.
+          {categoryIntro}
+        </p>
+        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+          USD. Page size: {PER_PAGE}.
         </p>
       </div>
 
