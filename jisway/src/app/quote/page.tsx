@@ -5,6 +5,7 @@ import { getCatalog } from "@/lib/catalog";
 export const metadata: Metadata = {
   title: "Request a Quote",
   description: "Submit a quote request for high subtotal or special requirements.",
+  alternates: { canonical: "/quote" },
 };
 
 export default function QuotePage() {
